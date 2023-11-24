@@ -4,6 +4,23 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+/*
+TODO:
+-enforce dragging along 8 directions (x/y axis and diagonals) only
+    -plan: check the direction of the first square touched after drag begins
+    -that direction is the main direction
+    -every next node has every direction other than the main direction locked
+    -player has to stop dragging to start dragging in a new direction
+-allow removing letters from letterList on backdragging
+    -plan: use isSelected bool as a toggle
+    -if isSelected is false, node gets added to list on PointerOver, then flip isSelected
+    -if isSelected is true, node gets removed from list on PointerOver, then flip isSelected
+-way to track words already spotted and generate success message once all words are found
+    -plan: use Remove() to take out words from list
+    -once list is empty, success
+-use scriptable objects to store and load wordsearch matrices and word lists (loadout style)
+*/
+
 public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler{
     [SerializeField] char letter;
 
@@ -12,7 +29,12 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
         set { letter = value; }
     }
 
-    bool isSearched;
+    bool isSelected, isSearched;
+    
+    public bool IsSelected {
+        get { return isSelected; }
+        set { isSelected = value; }
+    }
     public bool IsSearched {
         get { return isSearched; }
         set { isSearched = value; }
@@ -29,6 +51,7 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
         letterBg = GetComponent<Image>();
     }
 
+    //changes letterBg color based on whether or not letter is part of a word
     public void SetColor(){
         if(isSearched){
             letterBg.color = WordsearchManager.Instance.SearchColor;
@@ -36,7 +59,8 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
             letterBg.color = WordsearchManager.Instance.BaseColor;
         }
     }
-
+    
+    //changes letter shown on tile
     public void SetLetter(char letter){
         this.letter = letter;
 
@@ -66,6 +90,8 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
     }
     
     public void OnPointerDown(PointerEventData eventData){
+        isSelected = true;
+
         WordsearchManager.Instance.IsDragging = true;
         WordsearchManager.Instance.LetterList.Add(this);
     }
