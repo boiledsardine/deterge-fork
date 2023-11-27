@@ -4,29 +4,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-/*
-TODO:
--enforce dragging along 8 directions (x/y axis and diagonals) only
-    -plan: check the direction of the first square touched after drag begins
-    -that direction is the main direction
-    -every next node has every direction other than the main direction locked
-    -player has to stop dragging to start dragging in a new direction
--allow removing letters from letterList on backdragging
-    -plan: use isSelected bool as a toggle
-    -if isSelected is false, node gets added to list on PointerOver, then flip isSelected
-    -if isSelected is true, node gets removed from list on PointerOver, then flip isSelected
--way to track words already spotted and generate success message once all words are found
-    -plan: use Remove() to take out words from list
-    -once list is empty, success
--use scriptable objects to store and load wordsearch matrices and word lists (loadout style)
-*/
-
-public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler{
+public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IDragHandler, IBeginDragHandler, IEndDragHandler{
     [SerializeField] char letter;
 
     public char Letter {
         get { return letter; }
         set { letter = value; }
+    }
+
+    [SerializeField] Vector2Int coords;
+    public Vector2Int Coords{
+        get { return coords; }
+        set { coords = value; }
     }
 
     bool isSelected, isSearched;
@@ -40,7 +29,21 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
         set { isSearched = value; }
     }
 
-    WordsearchLetter n, s, e, w;
+    [SerializeField] WordsearchLetter n, ne, e, se, s, sw, w, nw;
+    public WordsearchLetter GetDirection(Dir direction){
+        switch(direction){
+            case Dir.n: return n;
+            case Dir.ne: return ne;
+            case Dir.e: return e;
+            case Dir.se: return se;
+            case Dir.s: return s;
+            case Dir.sw: return sw;
+            case Dir.w: return w;
+            case Dir.nw: return nw;
+            default: return null;
+        }
+    }
+
     Image letterBg;
     public Image LetterBg {
         get { return letterBg; }
@@ -48,7 +51,23 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
     }
 
     void Awake(){
-        letterBg = GetComponent<Image>();
+        letterBg = transform.parent.GetComponent<Image>();
+    }
+
+    public void AssignNeighbors(){
+        var matrix = WordsearchManager.Instance.Matrix;
+        //0 = row, 1 = col
+        int maxX = matrix.GetLength(0) - 1;
+        int maxY = matrix.GetLength(1) - 1;
+
+        n = coords.x > 0 ? matrix[coords.x - 1, coords.y] : null;
+        ne = coords.x > 0 && coords.y < maxY ? matrix[coords.x - 1, coords.y + 1] : null;
+        e = coords.y < maxY ? matrix[coords.x, coords.y + 1] : null;
+        se = coords.x < maxX && coords.y < maxY ? matrix[coords.x + 1, coords.y + 1] : null;
+        s = coords.x < maxX ? matrix[coords.x + 1, coords.y] : null;
+        sw = coords.x < maxX && coords.y > 0 ? matrix[coords.x + 1, coords.y - 1] : null;
+        w = coords.y > 0 ? matrix[coords.x, coords.y - 1] : null;
+        nw = coords.x > 0 && coords.y > 0 ? matrix[coords.x - 1, coords.y - 1] : null;
     }
 
     //changes letterBg color based on whether or not letter is part of a word
@@ -59,46 +78,66 @@ public class WordsearchLetter : MonoBehaviour, IPointerEnterHandler, IPointerExi
             letterBg.color = WordsearchManager.Instance.BaseColor;
         }
     }
+
+    public void ActivateTile(){
+        letterBg.color = WordsearchManager.Instance.ActiveColor;
+    }
     
     //changes letter shown on tile
     public void SetLetter(char letter){
         this.letter = letter;
 
-        var letterText = transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
+        var letterText = GetComponent<TMPro.TMP_Text>();
         letterText.text = this.letter.ToString().ToUpper();
     }
 
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData){
+        if(WordsearchManager.Instance.IsDragging){
+            WordsearchManager.Instance.FinalLetter = this;
+
+            //fire linesearcher
+            WordsearchManager.Instance.LineSearch();
+            
+            return;
+        }
+
         //change color to activecolor
         letterBg.color = WordsearchManager.Instance.ActiveColor;
-
-        if(WordsearchManager.Instance.IsDragging){
-            WordsearchManager.Instance.LetterList.Add(this);
-        }
     }
 
     public void OnPointerExit(PointerEventData eventData){
+        if(WordsearchManager.Instance.IsDragging){
+            return;
+        }
+
         //change color to basecolor
         //or searchcolor if isSearched is true
-        if(!WordsearchManager.Instance.IsDragging){
-            if(isSearched){
-               letterBg.color = WordsearchManager.Instance.SearchColor; 
-            } else {
-                letterBg.color = WordsearchManager.Instance.BaseColor;
-            }
+        if(isSearched){
+            letterBg.color = WordsearchManager.Instance.SearchColor; 
+        } else {
+            letterBg.color = WordsearchManager.Instance.BaseColor;
         }
     }
-    
-    public void OnPointerDown(PointerEventData eventData){
+
+    public void OnBeginDrag(PointerEventData eventData){
         isSelected = true;
 
         WordsearchManager.Instance.IsDragging = true;
-        WordsearchManager.Instance.LetterList.Add(this);
+        WordsearchManager.Instance.FirstLetter = this;
     }
 
-    public void OnPointerUp(PointerEventData eventData){
+    public void OnEndDrag(PointerEventData eventData){
         WordsearchManager.Instance.IsDragging = false;
+        
         WordsearchManager.Instance.EndDrag();
     }
 
+    public void OnDrag(PointerEventData eventData){
+        //does nothing for now
+        //TODO: draw a line with LineRenderer
+    }
+}
+
+public enum Dir{
+    n, ne, e, se, s, sw, w, nw
 }

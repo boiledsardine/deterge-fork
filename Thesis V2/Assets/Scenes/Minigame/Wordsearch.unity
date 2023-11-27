@@ -152,51 +152,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ee898013dbf28a42b57b3e0687452c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wordsearch: 'IYRSAVTYPHOIDR
-
-    ERFEOYOSSRRNAI
-
-    SARIVASFUVLAVF
-
-    UOVBPLVTSREROA
-
-    ASSAUILLRISVRM
-
-    SLLRLAMORDORPP
-
-    VSUAUFLUAUTEMI
-
-    ILFLLMIIROUUSN
-
-    SURIVONIHRERME
-
-    ALLENOMLASPUFT
-
-    LYSSAVIRUSRRUR
-
-    FLYSOSAPLHLIUB
-
-    TUBERCULOSISRH
-
-    FAPILREOOCOLDR'
+  wordsearchData: {fileID: 11400000, guid: 4f678a7410f43084faffb8d324e3edb4, type: 2}
   baseColor: {r: 1, g: 1, b: 1, a: 1}
   activeColor: {r: 0.13725491, g: 1, b: 0, a: 1}
   searchColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
-  validWords:
-  - COLD
-  - TYPHOID
-  - RHINOVIRUS
-  - FLU
-  - TUBERCULOSIS
-  - RABIES
-  - PRODROMAL
-  - RIFAMPIN
-  - SALMONELLA
-  - LYSSAVIRUS
   isDragging: 0
-  wordsearchLetterObj: {fileID: 5186534963267214682, guid: 2fbd2ca9741b5c746aec87bf1234b39d,
+  wordsearchLetterObj: {fileID: 5186534963267214680, guid: 2fbd2ca9741b5c746aec87bf1234b39d,
     type: 3}
   wordsearchGrid: {fileID: 1006453130}
+  container: {fileID: 6342091470502491906, guid: 237af413e440083429d16591d0ccdd16,
+    type: 3}
 --- !u!4 &221128544
 Transform:
   m_ObjectHideFlags: 0
@@ -339,7 +304,7 @@ MonoBehaviour:
   m_StartAxis: 0
   m_CellSize: {x: 50, y: 50}
   m_Spacing: {x: 0, y: 0}
-  m_Constraint: 1
+  m_Constraint: 2
   m_ConstraintCount: 14
 --- !u!1 &1599090484
 GameObject:
