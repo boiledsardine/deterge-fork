@@ -107,6 +107,26 @@ public class WordsearchManager : MonoBehaviour{
         foreach(WordsearchLetter w in matrix){
             w.AssignNeighbors();
         }
+
+        ResizeGrid();
+    }
+
+    void ResizeGrid(){
+        //get tile size
+        var obj = Instantiate(wordsearchLetterObj);
+        obj.transform.SetParent(wordsearchGrid.transform);
+        float width = obj.GetComponent<RectTransform>().rect.width;
+        float height = obj.GetComponent<RectTransform>().rect.height;
+        Destroy(obj);
+
+        float totalHeight = height * matrix.GetLength(0);
+        float totalWidth = width * matrix.GetLength(1);
+
+        var rt = wordsearchGrid.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(totalWidth, totalHeight);
+
+        //more elegant solution would be getting the bounds of WSGrid post-scale
+        //and lowering scale until bounds are a certain number
     }
 
     List<WordsearchLetter> letterList, lastSuccessfulSearch;

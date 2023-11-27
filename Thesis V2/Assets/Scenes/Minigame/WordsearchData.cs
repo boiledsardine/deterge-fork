@@ -7,4 +7,5 @@ public class WordsearchData : ScriptableObject{
     [TextArea(10,10)]
     public string wordsearch;
     public List<string> validWords;
+    //public Vector3 gridScale = new Vector3(1,1,1);
 }
