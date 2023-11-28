@@ -63,10 +63,14 @@ public class WordsearchManager : MonoBehaviour{
     [SerializeField] GameObject wordsearchLetterObj;
     [SerializeField] GameObject wordsearchGrid, container;
     WordsearchLetter[,] matrix;
-    [SerializeField] List<string> validWords;
     public WordsearchLetter[,] Matrix {
         get { return matrix; }
     }
+
+    List<string> validWords;
+
+    [SerializeField] float fontSize = 25f;
+    [SerializeField] Vector2 cellSize = new Vector2(50f, 50f), spacing;
 
     //generates matrix of letters
     //NEVER feed this a jagged array EVER
@@ -84,17 +88,14 @@ public class WordsearchManager : MonoBehaviour{
             letterGrid[i] = letterRows[i].ToCharArray();
         }
 
-        wordsearchGrid.GetComponent<GridLayoutGroup>().constraintCount = letterRows.Length;
-
+        wordsearchGrid.GetComponent<GridLayoutGroup>().constraintCount = letterRows.Length;  
         matrix = new WordsearchLetter[letterGrid.Length,letterGrid[0].Length];
+
         for(int i = 0; i < matrix.GetLength(0); i++){
-            var rowContainer = Instantiate(container);
-            rowContainer.name = "Row " + i;
-            rowContainer.transform.SetParent(wordsearchGrid.transform);
             for(int j = 0; j < matrix.GetLength(1); j++){
                 GameObject letter = Instantiate(wordsearchLetterObj);
-                letter.name = "(" + i + ", " + j + ")";
-                letter.transform.SetParent(rowContainer.transform);
+                letter.name = "(" + i + ", " + j + "): " + letterGrid[i][j].ToString();
+                letter.transform.SetParent(wordsearchGrid.transform);
 
                 WordsearchLetter letterObj = letter.GetComponentInChildren<WordsearchLetter>();
                 letterObj.gameObject.name = letterGrid[i][j].ToString();
@@ -111,6 +112,15 @@ public class WordsearchManager : MonoBehaviour{
         ResizeGrid();
     }
 
+    void Update(){
+        wordsearchGrid.GetComponent<GridLayoutGroup>().cellSize = cellSize;
+        wordsearchGrid.GetComponent<GridLayoutGroup>().spacing = spacing;
+
+        foreach(WordsearchLetter letter in matrix){
+            letter.GetComponent<TMPro.TMP_Text>().fontSize = fontSize;
+        }
+    }
+
     void ResizeGrid(){
         //get tile size
         var obj = Instantiate(wordsearchLetterObj);
@@ -124,6 +134,11 @@ public class WordsearchManager : MonoBehaviour{
 
         var rt = wordsearchGrid.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(totalWidth, totalHeight);
+
+        //!!! - CAVEMAN ANSWERS - !!!
+        //scale is manually inputted in WordsearchData
+        wordsearchGrid.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
+        //!!! - UNGA BUNGA OVER - !!!
 
         //more elegant solution would be getting the bounds of WSGrid post-scale
         //and lowering scale until bounds are a certain number
